@@ -37,6 +37,7 @@ async function refresh() {
 function render() {
   if (!state) return;
   syncLogTabs();
+  element('containers-tab').textContent = `Containers (${state.resources.length})`;
   element('total').textContent = String(state.resources.length);
   element('running').textContent = String(state.resources.filter(r => r.lifecycle === 'running').length);
   element('healthy').textContent = String(state.resources.filter(r => r.readiness === 'healthy').length);
@@ -317,6 +318,7 @@ async function refreshFiles() {
   } catch (error) { element('file-errors').textContent = String(error); }
 }
 function renderFiles() {
+  element('files-tab').textContent = `Files (${monitoredFiles.length})`;
   const body = element('files');
   const focused = body.contains(document.activeElement) ? (document.activeElement as HTMLElement).dataset.fileId : undefined;
   body.replaceChildren();
@@ -403,6 +405,7 @@ async function refreshBuildProcesses() {
     const response = await fetch('/api/build-processes');
     if (!response.ok) throw new Error(`Process scan returned HTTP ${response.status}`);
     const { processes, monitoredProcesses } = await response.json() as { processes: BuildProcess[]; monitoredProcesses: string[] };
+    element('build-processes-tab').textContent = `Processes (${processes.length})`;
     const body = element('build-processes'); body.replaceChildren();
     for (const process of processes) {
       const row = node('tr');
@@ -419,6 +422,7 @@ async function refreshBuildProcesses() {
     }
     element('build-processes-status').textContent = `${processes.length} running · Monitoring: ${monitoredProcesses.join(', ') || 'none'} · Updated ${new Date().toLocaleTimeString()}`;
   } catch (error) {
+    element('build-processes-tab').textContent = 'Processes';
     element('build-processes').replaceChildren();
     element('build-processes-status').textContent = `Process data unavailable: ${String(error)}`;
   }

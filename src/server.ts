@@ -124,7 +124,8 @@ export function createServer(monitor: Monitor, publicDirectory: string, startLog
           '/app.js': ['app.js', 'text/javascript; charset=utf-8'],
           '/tail-output.js': ['tail-output.js', 'text/javascript; charset=utf-8'],
           '/timeline.js': ['timeline.js', 'text/javascript; charset=utf-8'],
-          '/style.css': ['style.css', 'text/css; charset=utf-8']
+          '/style.css': ['style.css', 'text/css; charset=utf-8'],
+          '/logo.png': ['logo.png', 'image/png']
         };
         const file = files[url.pathname];
         if (file) { res.setHeader('Content-Type', file[1]); res.end(await readFile(path.join(publicDirectory, file[0]))); return; }
