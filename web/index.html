@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Thallium Iodide</title>
+  <meta name="theme-color" content="#101510"><link rel="stylesheet" href="/style.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <main>
+    <header><div><p class="eyebrow">LOCAL INFRASTRUCTURE · PODMAN</p><h1>Thallium Iodide<span class="dot" aria-hidden="true"></span></h1><p class="subtitle">Know what’s running. Recover what isn’t.</p></div><div class="connection"><span id="connection">Connecting…</span><button id="refresh">Refresh</button></div></header>
+    <div id="banner" role="alert" hidden></div>
+    <section class="summary" aria-label="Overview"><div><strong id="total">—</strong><span>RESOURCES</span></div><div><strong id="running">—</strong><span>RUNNING</span></div><div><strong id="healthy">—</strong><span>READY</span></div><div><strong id="attention">—</strong><span>NEED ATTENTION</span></div></section>
+    <div id="tabs" class="tabs" role="tablist" aria-label="Dashboard views"><button id="containers-tab" role="tab" aria-selected="true" aria-controls="containers-panel">Containers</button><button id="files-tab" role="tab" aria-selected="false" aria-controls="files-panel" tabindex="-1">Files</button><button id="build-processes-tab" role="tab" aria-selected="false" aria-controls="build-processes-panel" tabindex="-1">Processes</button></div>
+    <div id="tab-panels">
+    <section id="containers-panel" role="tabpanel" aria-labelledby="containers-tab" tabindex="0">
+    <div class="containers-layout">
+    <div class="table-scroll" aria-label="Managed containers" tabindex="0">
+      <table class="containers-table" aria-label="Monitored containers">
+        <thead><tr><th scope="col">Container name</th><th scope="col">Status</th><th scope="col">Liveness</th><th scope="col">Readiness</th><th scope="col">Start</th><th scope="col">Stop</th><th scope="col">Restart</th><th scope="col">Logs</th><th scope="col">Terminal</th><th scope="col">UI</th><th scope="col">Checked</th></tr></thead>
+        <tbody id="resources"></tbody>
+      </table>
+    </div>
+    <aside class="grafana-panel" aria-label="Grafana metrics">
+      <p class="eyebrow">GRAFANA · HALOGEN</p>
+      <iframe src="http://localhost:3000/d-solo/ad8q5xp/halogen?orgId=1&from=now-15m&to=now&timezone=browser&refresh=10s&panelId=panel-9" width="450" height="200" frameborder="0" title="Grafana panel: Halogen tokens per second"></iframe>
+      <iframe src="http://localhost:3000/d-solo/ad6488f/new-dashboard?orgId=1&timezone=browser&refresh=10s&panelId=panel-1" width="450" height="200" frameborder="0" title="Grafana panel: new-dashboard panel 1"></iframe>
+    </aside>
+    </div>
+    </section>
+    <section id="files-panel" role="tabpanel" aria-labelledby="files-tab" tabindex="0" hidden>
+      <h2>Monitored files</h2>
+      <p>Most recently modified first. Select Tail to open an output tab.</p>
+      <p id="file-errors" role="status"></p>
+      <div class="table-scroll" tabindex="0">
+        <table class="files-table" aria-label="Monitored files"><thead><tr><th scope="col">File</th><th scope="col">Last modified</th><th scope="col">Tail</th></tr></thead><tbody id="files"></tbody></table>
+      </div>
+    </section>
+    <section id="build-processes-panel" role="tabpanel" aria-labelledby="build-processes-tab" tabindex="0" hidden>
+      <h2>Monitored processes</h2>
+      <p>Running host processes selected by monitoredProcesses in config.json. CPU is the lifetime average (100% = one core); memory is resident RAM (RSS).</p>
+      <p id="build-processes-status" role="status">Loading…</p>
+      <div class="table-scroll" tabindex="0">
+        <table class="files-table" aria-label="Running monitored processes"><thead><tr><th scope="col">PID</th><th scope="col">Command</th><th scope="col">Started</th><th scope="col">Elapsed</th><th scope="col">CPU</th><th scope="col">Memory (RSS)</th><th scope="col">Memory %</th></tr></thead><tbody id="build-processes"></tbody></table>
+      </div>
+    </section>
+    </div>
+    <footer>Localhost only · Manual recovery · Running does not imply ready</footer>
+  </main>
+</body>
+</html>
