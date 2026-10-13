@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
 import { spawn, type ChildProcess } from 'node:child_process';
+import { hostname, networkInterfaces } from 'node:os';
 import { configSchema } from '../src/config.js';
 import { Monitor } from '../src/monitor.js';
 import { createServer } from '../src/server.js';
@@ -21,10 +22,31 @@ test('API enforces host, origin, token, content type and explicit confirmation',
       request.on('error', reject);
     });
     assert.equal(badHostStatus, 403);
+    const hostnameStatus = await new Promise<number | undefined>((resolve, reject) => {
+      const request = http.get(base, { headers: { Host: `${hostname()}:${(server.address() as { port: number }).port}` } }, response => {
+        response.resume(); resolve(response.statusCode);
+      });
+      request.on('error', reject);
+    });
+    assert.equal(hostnameStatus, 200);
     assert.equal((await fetch(`${base}/api/state`, { headers: { Origin: 'http://evil.example' } })).status, 403);
     assert.equal((await fetch(`${base}/api/state`, { headers: { 'Sec-Fetch-Site': 'cross-site' } })).status, 403);
     const response = await fetch(`${base}/api/state`);
     assert.match(response.headers.get('content-security-policy')!, /frame-ancestors 'none'/);
+    const remoteAddress = Object.values(networkInterfaces()).flatMap(addresses => addresses ?? [])
+      .find(address => address.family === 'IPv4' && !address.internal)?.address;
+    if (remoteAddress) {
+      const remoteResponse = await new Promise<http.IncomingMessage>((resolve, reject) => {
+        const request = http.get(base, { headers: { Host: `${remoteAddress}:${(server.address() as { port: number }).port}` } }, resolve);
+        request.on('error', reject);
+      });
+      const html = await new Promise<string>((resolve, reject) => {
+        let body = ''; remoteResponse.setEncoding('utf8'); remoteResponse.on('data', chunk => { body += chunk; });
+        remoteResponse.on('end', () => resolve(body)); remoteResponse.on('error', reject);
+      });
+      assert.match(remoteResponse.headers['content-security-policy']!, new RegExp(`frame-src[^;]*http://${remoteAddress}:3000`));
+      assert.doesNotMatch(html, /src="http:\/\/localhost:3000/);
+    }
     const data = await response.json() as { token: string };
     const endpoint = `${base}/api/resources/ai/actions`;
     const body = JSON.stringify({ action: 'restart' });

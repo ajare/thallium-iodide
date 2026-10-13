@@ -9,6 +9,9 @@ type Resource = {
 };
 type State = { token: string; podmanError: string | null; resources: Resource[]; pollIntervalMs: number };
 const element = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
+for (const frame of document.querySelectorAll<HTMLIFrameElement>('[data-grafana-path]')) {
+  frame.src = `http://${window.location.hostname}:3000${frame.dataset.grafanaPath}`;
+}
 type MonitoredFile = { id: string; path: string; modifiedAt: string };
 let monitoredFiles: MonitoredFile[] = [];
 let state: State | undefined;

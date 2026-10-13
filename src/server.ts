@@ -5,14 +5,14 @@ import { spawn } from 'node:child_process';
 import { scanFiles } from './files.js';
 import { scanBuildProcesses } from './build-processes.js';
 import path from 'node:path';
-import { networkInterfaces } from 'node:os';
+import { hostname, networkInterfaces } from 'node:os';
 import { Monitor, RequestError, message, type Action } from './monitor.js';
 import { openContainerTerminal } from './terminal.js';
 
 const spawnLogs = (containerName: string) => spawn('podman', ['logs', '--tail', '200', '--follow', '--timestamps', containerName], { shell: false, stdio: ['ignore', 'pipe', 'pipe'] });
 
 export function createServer(monitor: Monitor, publicDirectory: string, startLogProcess = spawnLogs, scanProcesses = () => scanBuildProcesses(monitor.config.monitoredProcesses), openTerminal: (containerName: string) => Promise<void> = openContainerTerminal) {
-  const allowedHosts = new Set(['localhost', '0.0.0.0', '127.0.0.1', ...Object.values(networkInterfaces()).flatMap(addresses => (addresses ?? []).filter(address => address.family === 'IPv4').map(address => address.address))]);
+  const allowedHosts = new Set(['localhost', '0.0.0.0', '127.0.0.1', hostname().toLowerCase(), ...Object.values(networkInterfaces()).flatMap(addresses => (addresses ?? []).filter(address => address.family === 'IPv4').map(address => address.address))]);
   const token = randomBytes(32).toString('hex');
   const requireToken = (req: IncomingMessage) => {
     const supplied = req.headers['x-control-token'];
@@ -26,11 +26,12 @@ export function createServer(monitor: Monitor, publicDirectory: string, startLog
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('Cache-Control', 'no-store');
-    res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; frame-src http://localhost:3000 http://127.0.0.1:3000; frame-ancestors 'none'; base-uri 'none'; form-action 'none'");
     try {
       const port = (server.address() as { port: number } | null)?.port ?? monitor.config.port;
       const host = req.headers.host;
-      if (![...allowedHosts].some(address => host === `${address}:${port}`)) throw new RequestError('Invalid Host header', 403);
+      const allowedHost = [...allowedHosts].find(address => host === `${address}:${port}`);
+      if (!allowedHost) throw new RequestError('Invalid Host header', 403);
+      res.setHeader('Content-Security-Policy', `default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; frame-src http://${allowedHost}:3000; frame-ancestors 'none'; base-uri 'none'; form-action 'none'`);
       if ((req.headers.origin && req.headers.origin !== `http://${host}`) || req.headers['sec-fetch-site'] === 'cross-site') {
         throw new RequestError('Cross-origin access forbidden', 403);
       }
