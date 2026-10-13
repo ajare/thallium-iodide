@@ -53,9 +53,13 @@ function render() {
     const expanded = row.querySelector('details')?.open ?? false;
     const name = node('th', undefined, 'container-info'); name.scope = 'row';
     name.append(node('div', resource.containerName ?? 'Container name not configured', 'container-name'), node('div', resource.name, 'resource-name'));
-    const status = node('td'); status.append(node('span', resource.lifecycle, `badge ${resource.lifecycle}`));
-    const liveness = node('td'); liveness.append(node('span', resource.liveness, `badge ${resource.liveness}`));
-    const readiness = node('td'); readiness.append(node('span', resource.readiness, `badge ${resource.readiness}`));
+    // data-label tags let the mobile stylesheet render each cell with a field label in card layout.
+    const status = node('td'); status.dataset.label = 'Status';
+    status.append(node('span', resource.lifecycle, `badge ${resource.lifecycle}`));
+    const liveness = node('td'); liveness.dataset.label = 'Liveness';
+    liveness.append(node('span', resource.liveness, `badge ${resource.liveness}`));
+    const readiness = node('td'); readiness.dataset.label = 'Readiness';
+    readiness.append(node('span', resource.readiness, `badge ${resource.readiness}`));
     const content: Node[] = [name, status, liveness, readiness];
     if (resource.configurationErrors.length) {
       const errors = node('div', undefined, 'config-errors');
@@ -99,7 +103,9 @@ function render() {
       uiCell.append(link);
     }
     content.push(uiCell);
-    content.push(node('td', resource.checkedAt ? new Date(resource.checkedAt).toLocaleTimeString() : 'Not checked yet', 'checked-time'));
+    const checked = node('td', resource.checkedAt ? new Date(resource.checkedAt).toLocaleTimeString() : 'Not checked yet', 'checked-time');
+    checked.dataset.label = 'Checked';
+    content.push(checked);
     row.replaceChildren(...content);
     if (focused) row.querySelector<HTMLButtonElement>(`[data-control="${focused}"]`)?.focus();
   }
