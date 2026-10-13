@@ -73,10 +73,14 @@ export function createServer(monitor: Monitor, publicDirectory: string, startLog
       if (((match && match[2] === 'logs') || fileMatch) && req.method === 'GET') {
         let startProcess: () => ReturnType<typeof spawn>;
         if (fileMatch) {
+          const lines = url.searchParams.get('lines') ?? '200';
+          if (!/^\d+$/.test(lines) || Number(lines) < 1 || Number(lines) > 1000) {
+            throw new RequestError('lines must be an integer between 1 and 1000');
+          }
           const { files } = await scanFiles(monitor.config.monitoredPaths);
           const file = files.find(file => file.id === fileMatch[1]);
           if (!file) throw new RequestError('Monitored file not found', 404);
-          startProcess = () => spawn('tail', ['-n', '200', '-F', '--', file.path], { shell: false, stdio: ['ignore', 'pipe', 'pipe'] });
+          startProcess = () => spawn('tail', ['-n', String(Number(lines)), '-F', '--', file.path], { shell: false, stdio: ['ignore', 'pipe', 'pipe'] });
         } else {
           const resource = monitor.resource(match![1]);
           const snapshot = monitor.snapshots.find(s => s.id === resource.id)!;

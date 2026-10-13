@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { TailOutput } from '../web/tail-output.js';
+import { parseTimeline } from '../web/timeline.js';
 
 test('pretty-prints complete JSON documents including documents split across chunks', () => {
   const output = new TailOutput('/logs/result.json');
@@ -27,6 +28,31 @@ test('leaves other output raw, handles uppercase extensions and resets after cle
   const output = new TailOutput('/logs/RESULT.JSONL');
   output.append('{"partial":'); output.clear();
   assert.equal(output.append('{"new":true}'), JSON.stringify({ new: true }, null, 2));
+});
+
+test('file line limits count source records and roll forward on live chunks', () => {
+  const output = new TailOutput('/logs/events.jsonl', 2);
+  const record = (i: number) => JSON.stringify({ type: 'message', id: String(i), timestamp: new Date(i * 1000).toISOString(), message: { role: 'assistant', content: [{ type: 'text', text: String(i) }] } });
+  output.append([record(1), record(2), record(3)].join('\n') + '\n');
+  assert.equal(output.rawText(), record(2) + '\n' + record(3) + '\n');
+  assert.equal(parseTimeline(output.rawText()).length, 2);
+  output.append(record(4).slice(0, 20));
+  assert.equal(output.rawText(), record(3) + '\n' + record(4).slice(0, 20));
+  output.append(record(4).slice(20) + '\n');
+  assert.equal(output.rawText(), record(3) + '\n' + record(4) + '\n');
+  assert.equal(parseTimeline(output.rawText()).length, 2);
+  output.setLineLimit(1);
+  assert.equal(output.rawText(), record(4) + '\n');
+  output.setLineLimit(200);
+  output.append(record(5) + '\n');
+  assert.equal(parseTimeline(output.rawText()).length, 2);
+});
+
+test('keeps exactly 200 source lines including a terminating newline', () => {
+  const output = new TailOutput('/logs/plain.log', 200);
+  output.append(Array.from({ length: 250 }, (_, i) => String(i)).join('\n') + '\n');
+  assert.equal(output.rawText().split('\n')[0], '50');
+  assert.equal(output.rawText().split('\n').length, 201);
 });
 
 test('bounds raw and pretty-printed output', () => {

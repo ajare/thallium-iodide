@@ -138,7 +138,7 @@ async function act(resource: Resource, action: Action) {
 }
 let stream: EventSource | undefined;
 let activeLogs: string | null = null;
-type LogView = { tab: HTMLButtonElement; panel: HTMLElement; title: HTMLElement; output: HTMLElement; status: HTMLElement; autoscroll: HTMLInputElement; buffer: TailOutput; fileId?: string; mode?: 'raw' | 'timeline'; timelineEl?: HTMLElement; timelineSelected?: string };
+type LogView = { tab: HTMLButtonElement; panel: HTMLElement; title: HTMLElement; output: HTMLElement; status: HTMLElement; autoscroll: HTMLInputElement; buffer: TailOutput; fileId?: string; lineLimit?: number; mode?: 'raw' | 'timeline'; timelineEl?: HTMLElement; timelineSelected?: string };
 const logViews = new Map<string, LogView>();
 function stopStream() { stream?.close(); stream = undefined; }
 function syncLogTabs() {
@@ -206,7 +206,7 @@ function startLogs(id: string) {
   view.status.textContent = 'Connecting…';
   // A reconnect includes the recent tail again; retain prior output until new data arrives.
   let first = true;
-  const source = new EventSource(view.fileId ? `/api/files/${view.fileId}/logs` : `/api/resources/${id}/logs`); stream = source;
+  const source = new EventSource(view.fileId ? `/api/files/${view.fileId}/logs?lines=${view.lineLimit ?? 200}` : `/api/resources/${id}/logs`); stream = source;
   source.onopen = () => { if (stream === source) view.status.textContent = 'Live'; };
   source.addEventListener('log', event => {
     if (stream !== source) return;
@@ -262,6 +262,7 @@ function selectTimelineEvent(view: LogView, id: string) {
 function renderTimeline(view: LogView) {
   const container = view.timelineEl!;
   const events = parseTimeline(view.buffer.rawText()).filter(event => event.at != null);
+  const scrollLeft = container.querySelector('.timeline-scroll')?.scrollLeft ?? 0;
   container.replaceChildren();
   if (!events.length) { container.append(node('p', 'No events parsed yet.', 'timeline-empty')); return; }
   const t0 = Math.min(...events.map(event => event.at!));
@@ -313,6 +314,7 @@ function renderTimeline(view: LogView) {
   const detail = node('div', undefined, 'timeline-detail');
   renderTimelineDetail(view, detail);
   container.append(legend, scroll, detail);
+  scroll.scrollLeft = scrollLeft;
 }
 function openLogs(resource: Resource) {
   selectTab(resource.id); logViews.get(resource.id)?.tab.focus();
@@ -377,9 +379,26 @@ function openFile(file: MonitoredFile) {
     const label = node('label'); label.append(autoscroll, ' Auto-scroll');
     const clear = node('button', 'Clear view'); const reconnect = node('button', 'Reconnect'); const close = node('button', 'Stop tail');
     const status = node('span'); status.setAttribute('role', 'status'); const output = node('pre', '', 'log-output'); output.tabIndex = 0;
-    const buffer = new TailOutput(file.path);
-    const view: LogView = { tab, panel, title, output, status, autoscroll, buffer, fileId: file.id };
-    panel.append(node('p', 'FILE TAIL · LAST 200 LINES + LIVE', 'eyebrow'), title, tools, output);
+    const buffer = new TailOutput(file.path, 200);
+    const view: LogView = { tab, panel, title, output, status, autoscroll, buffer, fileId: file.id, lineLimit: 200 };
+    const eyebrow = node('p', 'FILE TAIL · LAST 200 LINES + LIVE', 'eyebrow');
+    const lines = node('select');
+    for (const count of [50, 100, 200, 500, 1000]) {
+      const option = node('option', String(count)); option.value = String(count); option.selected = count === 200;
+      lines.append(option);
+    }
+    const linesLabel = node('label'); linesLabel.append('Lines ', lines);
+    lines.onchange = () => {
+      view.lineLimit = Number(lines.value);
+      eyebrow.textContent = `FILE TAIL · LAST ${view.lineLimit} LINES + LIVE`;
+      view.output.textContent = buffer.setLineLimit(view.lineLimit);
+      if (view.timelineEl) {
+        renderTimeline(view);
+        if (autoscroll.checked) scrollTimelineToLiveEdge(view);
+      }
+      startLogs(key);
+    };
+    panel.append(eyebrow, title, tools, output);
     // JSONL files get a parsed event timeline alongside the raw tail.
     if (file.path.toLowerCase().endsWith('.jsonl')) {
       view.mode = 'raw';
@@ -399,9 +418,9 @@ function openFile(file: MonitoredFile) {
       };
       rawButton.onclick = () => setMode('raw'); timelineButton.onclick = () => setMode('timeline');
       const switcher = node('span', undefined, 'view-switch'); switcher.append(rawButton, timelineButton);
-      tools.append(label, switcher, clear, reconnect, close, status);
+      tools.append(linesLabel, label, switcher, clear, reconnect, close, status);
     } else {
-      tools.append(label, clear, reconnect, close, status);
+      tools.append(linesLabel, label, clear, reconnect, close, status);
     }
     clear.onclick = () => { buffer.clear(); output.textContent = ''; if (view.timelineEl) renderTimeline(view); };
     reconnect.onclick = () => startLogs(key);
