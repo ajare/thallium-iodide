@@ -32,7 +32,9 @@ test('terminal endpoint requires a token and a running container, and opens a te
   await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
   const base = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
   try {
-    const { token } = await (await fetch(`${base}/api/state`)).json() as { token: string };
+    const { token, localClient } = await (await fetch(`${base}/api/state`)).json() as { token: string; localClient: boolean };
+    // The test server is reached over loopback, so the terminal column is offered.
+    assert.equal(localClient, true);
     const endpoint = `${base}/api/resources/ai/terminal`;
     assert.equal((await fetch(endpoint, { method: 'POST' })).status, 403);
     assert.equal((await fetch(`${base}/api/resources/unknown/terminal`, { method: 'POST', headers: { 'X-Control-Token': token } })).status, 404);

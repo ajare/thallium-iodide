@@ -7,7 +7,7 @@ type Resource = {
   detail: string; checkedAt: string | null; configurationErrors: string[]; availableActions: Action[];
   lastAction?: { action: string; state: string; output: string; error?: string; truncated: boolean };
 };
-type State = { token: string; podmanError: string | null; resources: Resource[]; pollIntervalMs: number };
+type State = { token: string; podmanError: string | null; resources: Resource[]; pollIntervalMs: number; localClient: boolean };
 const element = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 for (const frame of document.querySelectorAll<HTMLIFrameElement>('[data-grafana-path]')) {
   frame.src = `http://${window.location.hostname}:3000${frame.dataset.grafanaPath}`;
@@ -21,6 +21,13 @@ const pending = new Set<string>();
 const rows = new Map<string, HTMLTableRowElement>();
 function node<K extends keyof HTMLElementTagNameMap>(tag: K, text?: string, className?: string) {
   const el = document.createElement(tag); if (text !== undefined) el.textContent = text; if (className) el.className = className; return el;
+}
+// Configured UI URLs point at the host's loopback; swap in whatever host this client actually connected to,
+// so the links work identically for a local browser and a remote (e.g. tailnet) client.
+function clientUrl(url: string) {
+  const parsed = new URL(url);
+  if (['127.0.0.1', 'localhost', '[::1]'].includes(parsed.hostname)) parsed.hostname = window.location.hostname;
+  return parsed.toString();
 }
 function banner(text: string | null) { element('banner').textContent = text; element('banner').hidden = !text; }
 async function refresh() {
@@ -39,6 +46,8 @@ async function refresh() {
 }
 function render() {
   if (!state) return;
+  // Terminals open on the host's display, so remote clients don't get the column.
+  document.body.classList.toggle('remote-client', !state.localClient);
   syncLogTabs();
   element('containers-tab').textContent = `Containers (${state.resources.length})`;
   element('total').textContent = String(state.resources.length);
@@ -85,7 +94,7 @@ function render() {
     terminal.title = terminal.disabled ? 'Requires a running container' : `Open a terminal inside ${resource.name}`;
     terminal.setAttribute('aria-label', `Open a terminal inside ${resource.name}`);
     terminal.onclick = () => void openTerminal(resource);
-    const terminalCell = node('td'); terminalCell.append(terminal); content.push(terminalCell);
+    const terminalCell = node('td', undefined, 'terminal-column'); terminalCell.append(terminal); content.push(terminalCell);
     if (resource.lastAction) {
       const action = resource.lastAction;
       const details = node('details'); details.open = expanded;
@@ -98,7 +107,7 @@ function render() {
     const uiCell = node('td');
     if (resource.uiUrl) {
       const link = node('a', 'UI', 'ui-link');
-      link.href = resource.uiUrl; link.target = '_blank'; link.rel = 'noopener noreferrer';
+      link.href = clientUrl(resource.uiUrl); link.target = '_blank'; link.rel = 'noopener noreferrer';
       link.setAttribute('aria-label', `Open UI for ${resource.name}`);
       uiCell.append(link);
     }

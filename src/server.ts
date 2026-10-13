@@ -10,6 +10,8 @@ import { Monitor, RequestError, message, type Action } from './monitor.js';
 import { openContainerTerminal } from './terminal.js';
 
 const spawnLogs = (containerName: string) => spawn('podman', ['logs', '--tail', '200', '--follow', '--timestamps', containerName], { shell: false, stdio: ['ignore', 'pipe', 'pipe'] });
+// A terminal emulator opens on the host's display, so it only makes sense for a client on the host itself.
+const isLoopback = (address: string | undefined) => address === '127.0.0.1' || address === '::1' || address === '::ffff:127.0.0.1';
 
 export function createServer(monitor: Monitor, publicDirectory: string, startLogProcess = spawnLogs, scanProcesses = () => scanBuildProcesses(monitor.config.monitoredProcesses), openTerminal: (containerName: string) => Promise<void> = openContainerTerminal) {
   const allowedHosts = new Set(['localhost', '0.0.0.0', '127.0.0.1', hostname().toLowerCase(), ...Object.values(networkInterfaces()).flatMap(addresses => (addresses ?? []).filter(address => address.family === 'IPv4').map(address => address.address))]);
@@ -37,7 +39,7 @@ export function createServer(monitor: Monitor, publicDirectory: string, startLog
       }
       const url = new URL(req.url ?? '/', `http://${host}`);
       if (req.method === 'GET' && url.pathname === '/api/state') {
-        json(res, 200, { ...monitor.data(), token }); return;
+        json(res, 200, { ...monitor.data(), token, localClient: isLoopback(req.socket.remoteAddress) }); return;
       }
       if (req.method === 'GET' && url.pathname === '/api/files') {
         json(res, 200, await scanFiles(monitor.config.monitoredPaths)); return;
@@ -57,6 +59,7 @@ export function createServer(monitor: Monitor, publicDirectory: string, startLog
       }
       if (match && match[2] === 'terminal' && req.method === 'POST') {
         requireToken(req);
+        if (!isLoopback(req.socket.remoteAddress)) throw new RequestError('Terminal is only available to clients on this host', 403);
         const resource = monitor.resource(match[1]);
         const snapshot = monitor.snapshots.find(s => s.id === resource.id)!;
         if (!resource.containerName || snapshot.lifecycle !== 'running') throw new RequestError('Terminal requires a running container', 409);

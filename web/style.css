@@ -69,6 +69,7 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; font: 12px/1.6 ui-monospac
 #banner { padding: 16px; margin-bottom: 20px; border: 1px solid #6b4133; border-radius: 8px; background: #2d201f; color: #ffc1a8; }
 footer { color: var(--quiet); font-size: 11px; letter-spacing: .4px; margin-top: 32px; }
 [hidden] { display: none !important; }
+.remote-client .terminal-column { display: none !important; }
 .tabs { display: flex; gap: 8px; overflow-x: auto; padding: 4px 3px 14px; margin-bottom: 14px; border-bottom: 1px solid var(--border); }
 .tabs button { white-space: nowrap; }
 .tabs button[aria-selected="true"] { background: var(--accent-surface); border-color: var(--accent-border); color: var(--accent-bright); }
