@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const name = 'local-ai-control-tower';
+const name = 'thallium-iodide';
 const markerName = '.local-install.json';
 const sourceRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const quote = value => `'${value.replaceAll("'", "'\\''")}'`;

@@ -20,20 +20,20 @@ Open **http://127.0.0.1:4310**. The server binds to `0.0.0.0` (all IPv4 interfac
 
 ## Local installation (Linux/macOS)
 
-The launcher and installation/configuration directories retain the legacy `local-ai-control-tower` name for compatibility with existing installations.
+The launcher and installation/configuration directories use the `thallium-iodide` name. Older installations are not migrated automatically; seed the new installation with your existing configuration using `--config` (see below).
 
 Install for your current user, without sudo, from this checkout:
 
 ```sh
 npm ci
 npm run install:local
-# Edit ~/.config/local-ai-control-tower/config.json before starting.
-~/.local/bin/local-ai-control-tower
+# Edit ~/.config/thallium-iodide/config.json before starting.
+~/.local/bin/thallium-iodide
 ```
 
-Requires Node.js 22+ and npm. Runtime tools (Podman, and `ps`/`tail` for their respective views) must remain on PATH. Run as the user who owns your containers. The installer builds the app, copies its runtime and browser assets to `~/.local/share/local-ai-control-tower`, installs production dependencies there using the lockfile, and creates an executable launcher at `~/.local/bin/local-ai-control-tower`. It does not install Node.js or Podman, start the application, or configure an autostart service. Dependency installation may need network access.
+Requires Node.js 22+ and npm. Runtime tools (Podman, and `ps`/`tail` for their respective views) must remain on PATH. Run as the user who owns your containers. The installer builds the app, copies its runtime and browser assets to `~/.local/share/thallium-iodide`, installs production dependencies there using the lockfile, and creates an executable launcher at `~/.local/bin/thallium-iodide`. It does not install Node.js or Podman, start the application, or configure an autostart service. Dependency installation may need network access.
 
-Configuration lives at `${XDG_CONFIG_HOME:-$HOME/.config}/local-ai-control-tower/config.json`. On first install it is copied from `config.example.json`, **not** your checkout's `config.json`. To seed it with your existing configuration instead:
+Configuration lives at `${XDG_CONFIG_HOME:-$HOME/.config}/thallium-iodide/config.json`. On first install it is copied from `config.example.json`, **not** your checkout's `config.json`. To seed it with your existing configuration instead:
 
 ```sh
 npm run install:local -- --config /absolute/path/config.json
@@ -41,7 +41,7 @@ npm run install:local -- --config /absolute/path/config.json
 
 Existing installed configuration is never overwritten. Review container names and the absolute `scriptsDirectory` before launching. Lifecycle scripts remain in your configured directory; the installer does not copy or execute them.
 
-Add `~/.local/bin` to your shell's PATH to launch with `local-ai-control-tower`. The launcher works from any working directory and honors `CONFIG_PATH` overrides. Node.js must remain at the path used during installation; reinstall after moving or replacing a version-manager installation. Open **http://127.0.0.1:4310** (or your configured port) and use Ctrl+C to stop.
+Add `~/.local/bin` to your shell's PATH to launch with `thallium-iodide`. The launcher works from any working directory and honors `CONFIG_PATH` overrides. Node.js must remain at the path used during installation; reinstall after moving or replacing a version-manager installation. Open **http://127.0.0.1:4310** (or your configured port) and use Ctrl+C to stop.
 
 To update, stop the app, update the checkout, run `npm ci` and `npm run install:local` again, then relaunch. Build or dependency-install failures leave the previous installation intact.
 
@@ -50,7 +50,7 @@ To uninstall, stop the app first, then use either command:
 ```sh
 npm run uninstall:local
 # Or, without needing the source checkout:
-~/.local/bin/local-ai-control-tower --uninstall
+~/.local/bin/thallium-iodide --uninstall
 ```
 
 Uninstall removes only the owned application directory and unchanged launcher. It **preserves configuration**, lifecycle scripts, monitored files, and all managed containers. Delete the configuration directory manually if you no longer want those settings. Repeated uninstall is harmless; unrelated paths or edited launchers are rejected rather than deleted.

@@ -98,6 +98,17 @@ test('failed dependency installation leaves existing installation usable', async
   await access(path.join(paths.app, 'dist/server/index.js'));
 });
 
+test('installation locations use thallium-iodide for runtime, launcher, and configuration', () => {
+  const prefix = path.join(os.homedir(), '.local');
+  const configHome = path.join(os.homedir(), '.config');
+  assert.deepEqual(locations({ prefix, configHome }), {
+    prefix,
+    app: path.join(prefix, 'share', 'thallium-iodide'),
+    launcher: path.join(prefix, 'bin', 'thallium-iodide'),
+    config: path.join(configHome, 'thallium-iodide', 'config.json')
+  });
+});
+
 test('installation locations reject relative prefixes and configuration homes', () => {
   assert.throws(() => locations({ prefix: 'relative' }), /absolute/);
   assert.throws(() => locations({ configHome: '~/config' }), /absolute/);
