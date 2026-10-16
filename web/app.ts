@@ -137,7 +137,7 @@ async function act(resource: Resource, action: Action) {
   finally { pending.delete(resource.id); await refresh(); render(); }
 }
 let stream: EventSource | undefined;
-let activeLogs: string | null = null;
+let activeLogs: string | null = ':home';
 type LogView = { tab: HTMLButtonElement; panel: HTMLElement; title: HTMLElement; output: HTMLElement; status: HTMLElement; autoscroll: HTMLInputElement; buffer: TailOutput; fileId?: string; lineLimit?: number; mode?: 'raw' | 'timeline'; timelineEl?: HTMLElement; timelineSelected?: string };
 const logViews = new Map<string, LogView>();
 function stopStream() { stream?.close(); stream = undefined; }
@@ -180,6 +180,9 @@ function selectTab(id: string | null) {
   stopStream();
   if (activeLogs && logViews.has(activeLogs)) logViews.get(activeLogs)!.status.textContent = 'Paused — select this tab to reconnect';
   activeLogs = id;
+  element('home-panel').hidden = id !== ':home';
+  element('home-tab').setAttribute('aria-selected', String(id === ':home'));
+  element('home-tab').tabIndex = id === ':home' ? 0 : -1;
   element('build-processes-panel').hidden = id !== ':build-processes';
   element('build-processes-tab').setAttribute('aria-selected', String(id === ':build-processes'));
   element('build-processes-tab').tabIndex = id === ':build-processes' ? 0 : -1;
@@ -464,6 +467,8 @@ async function refreshBuildProcesses() {
     element('build-processes-status').textContent = `Process data unavailable: ${String(error)}`;
   }
 }
+element('home-logo').onclick = () => { selectTab(':home'); element('home-tab').focus(); };
+element('home-tab').onclick = () => selectTab(':home');
 element('build-processes-tab').onclick = () => selectTab(':build-processes');
 element('files-tab').onclick = () => selectTab(':files');
 element('containers-tab').onclick = () => selectTab(null);

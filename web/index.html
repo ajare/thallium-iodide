@@ -8,12 +8,20 @@
 </head>
 <body>
   <main>
-    <header><div><p class="eyebrow">LOCAL INFRASTRUCTURE · PODMAN</p><h1><img class="site-logo" src="/logo.png" alt="" width="40" height="44">Thallium Iodide<span class="dot" aria-hidden="true"></span></h1><p class="subtitle">Know what’s running. Recover what isn’t.</p></div><div class="connection"><span id="connection">Connecting…</span><button id="refresh">Refresh</button></div></header>
+    <header><div><p class="eyebrow">LOCAL INFRASTRUCTURE · PODMAN</p><h1><button id="home-logo" class="logo-button" aria-label="Home" title="Home" aria-controls="home-panel"><img class="site-logo" src="/logo.png" alt="" width="40" height="44"></button>Thallium Iodide<span class="dot" aria-hidden="true"></span></h1><p class="subtitle">Know what’s running. Recover what isn’t.</p></div><div class="connection"><span id="connection">Connecting…</span><button id="refresh">Refresh</button></div></header>
     <div id="banner" role="alert" hidden></div>
-    <section class="summary" aria-label="Overview"><div><strong id="total">—</strong><span>RESOURCES</span></div><div><strong id="running">—</strong><span>RUNNING</span></div><div><strong id="healthy">—</strong><span>READY</span></div><div><strong id="attention">—</strong><span>NEED ATTENTION</span></div></section>
-    <div id="tabs" class="tabs" role="tablist" aria-label="Dashboard views"><button id="containers-tab" role="tab" aria-selected="true" aria-controls="containers-panel">Containers</button><button id="files-tab" role="tab" aria-selected="false" aria-controls="files-panel" tabindex="-1">Files</button><button id="build-processes-tab" role="tab" aria-selected="false" aria-controls="build-processes-panel" tabindex="-1">Processes</button></div>
+    <div id="tabs" class="tabs" role="tablist" aria-label="Dashboard views"><button id="home-tab" role="tab" aria-label="Home" title="Home" aria-selected="true" aria-controls="home-panel"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></svg></button><button id="containers-tab" role="tab" aria-selected="false" aria-controls="containers-panel" tabindex="-1">Containers</button><button id="files-tab" role="tab" aria-selected="false" aria-controls="files-panel" tabindex="-1">Files</button><button id="build-processes-tab" role="tab" aria-selected="false" aria-controls="build-processes-panel" tabindex="-1">Processes</button></div>
     <div id="tab-panels">
-    <section id="containers-panel" role="tabpanel" aria-labelledby="containers-tab" tabindex="0">
+    <section id="home-panel" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
+      <h2>Home</h2>
+      <section class="summary" aria-label="Overview"><div><strong id="total">—</strong><span>RESOURCES</span></div><div><strong id="running">—</strong><span>RUNNING</span></div><div><strong id="healthy">—</strong><span>READY</span></div><div><strong id="attention">—</strong><span>NEED ATTENTION</span></div></section>
+      <aside class="grafana-panel" aria-label="Grafana metrics">
+        <p class="eyebrow">GRAFANA · HALOGEN</p>
+        <iframe data-grafana-path="/d-solo/ad8q5xp/halogen?orgId=1&amp;from=now-15m&amp;to=now&amp;timezone=browser&amp;refresh=10s&amp;panelId=panel-9" width="450" height="200" frameborder="0" title="Grafana panel: Halogen tokens per second"></iframe>
+        <iframe data-grafana-path="/d-solo/ad6488f/new-dashboard?orgId=1&amp;timezone=browser&amp;refresh=10s&amp;panelId=panel-1" width="450" height="200" frameborder="0" title="Grafana panel: new-dashboard panel 1"></iframe>
+      </aside>
+    </section>
+    <section id="containers-panel" role="tabpanel" aria-labelledby="containers-tab" tabindex="0" hidden>
     <div class="containers-layout">
     <div class="table-scroll" aria-label="Managed containers" tabindex="0">
       <table class="containers-table" aria-label="Monitored containers">
@@ -21,11 +29,6 @@
         <tbody id="resources"></tbody>
       </table>
     </div>
-    <aside class="grafana-panel" aria-label="Grafana metrics">
-      <p class="eyebrow">GRAFANA · HALOGEN</p>
-      <iframe data-grafana-path="/d-solo/ad8q5xp/halogen?orgId=1&amp;from=now-15m&amp;to=now&amp;timezone=browser&amp;refresh=10s&amp;panelId=panel-9" width="450" height="200" frameborder="0" title="Grafana panel: Halogen tokens per second"></iframe>
-      <iframe data-grafana-path="/d-solo/ad6488f/new-dashboard?orgId=1&amp;timezone=browser&amp;refresh=10s&amp;panelId=panel-1" width="450" height="200" frameborder="0" title="Grafana panel: new-dashboard panel 1"></iframe>
-    </aside>
     </div>
     </section>
     <section id="files-panel" role="tabpanel" aria-labelledby="files-tab" tabindex="0" hidden>

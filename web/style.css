@@ -26,7 +26,9 @@ main { max-width: none; margin: auto; padding: 44px 32px; }
 header { display: flex; justify-content: space-between; align-items: center; gap: 24px; margin-bottom: 36px; }
 .eyebrow { font-size: 11px; letter-spacing: 2px; color: var(--muted); font-weight: 650; margin: 0 0 10px; }
 h1 { display: flex; align-items: center; font-size: 34px; letter-spacing: -1.3px; margin: 0; font-weight: 650; }
-.site-logo { width: 40px; height: 44px; object-fit: contain; flex-shrink: 0; margin-right: 14px; }
+.site-logo { display: block; width: 40px; height: 44px; object-fit: contain; }
+.logo-button { flex-shrink: 0; padding: 0; margin-right: 14px; border: 0; background: transparent; }
+#home-tab { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .dot { display: inline-block; width: 9px; height: 9px; background: var(--accent); border-radius: 50%; vertical-align: middle; margin-left: 16px; box-shadow: 0 0 20px #7fc7bc50; }
 .subtitle { color: var(--muted); margin: 12px 0 0; }
 .connection { display: flex; gap: 18px; align-items: center; color: var(--muted); font-size: 12px; }
