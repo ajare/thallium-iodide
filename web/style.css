@@ -75,6 +75,18 @@ footer { color: var(--quiet); font-size: 11px; letter-spacing: .4px; margin-top:
 .tabs { display: flex; gap: 8px; overflow-x: auto; padding: 4px 3px 14px; margin-bottom: 14px; border-bottom: 1px solid var(--border); }
 .tabs button { white-space: nowrap; }
 .tabs button[aria-selected="true"] { background: var(--accent-surface); border-color: var(--accent-border); color: var(--accent-bright); }
+.github-tools { display: flex; flex-wrap: wrap; align-items: end; gap: 16px; margin: 20px 0; }
+.github-tools label { display: flex; flex-direction: column; gap: 6px; color: var(--muted); min-width: 0; }
+.github-tools input, .github-tools select { max-width: 100%; min-height: 38px; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--text); font: inherit; }
+.github-tools input:focus-visible, .github-tools select:focus-visible { outline: 2px solid var(--accent-bright); outline-offset: 3px; }
+.github-issue { padding: 20px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); margin-top: 14px; overflow-wrap: anywhere; }
+.github-issue h3 { margin: 0 0 8px; font-size: 16px; }
+.github-issue a { color: var(--accent-bright); }
+.github-meta, #github-status, #github-scope, #github-count { color: var(--muted); }
+.github-labels { display: flex; flex-wrap: wrap; gap: 6px; }
+.github-labels .badge { white-space: normal; }
+.github-preview { white-space: pre-wrap; }
+.github-body { white-space: pre-wrap; color: var(--text); line-height: 1.6; margin-top: 12px; }
 .logs-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 24px; }
 .log-tools { display: flex; align-items: center; gap: 18px; color: var(--muted); font-size: 12px; margin-top: 20px; }
 .log-output { height: 60vh; max-height: none; margin-bottom: 0; }

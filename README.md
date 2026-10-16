@@ -78,6 +78,25 @@ The **Processes** tab shows matching running host processes, with PID, full comm
 
 This read-only view requires Linux/procps `ps` on PATH and shows processes visible to the server, not Podman container inventory. Scan failures appear in the tab instead of being shown as an empty process list.
 
+## GitHub issues
+
+The **GitHub** tab is a read-only list of open issues (not pull requests) in repositories owned by the configured account. It includes private repositories and forks accessible to the server's GitHub login and excludes archived repositories and repositories owned by organizations or other users. Anyone who can access this dashboard can read matching private issues: restrict network access accordingly.
+
+Install the GitHub CLI (`gh`) on the server's PATH and run `gh auth login` as the user running this application. The login must have access to the intended repositories (including private repository access). No credentials are sent to the browser; missing authentication or permissions are reported in the tab. GitHub can only return repositories visible to that login; hidden repositories cannot be detected.
+
+Optional configuration (these are the defaults):
+
+```json
+"github": {
+  "owner": "ajare",
+  "labels": ["assignee:halogen/qwen-3.8-flash-next"]
+}
+```
+
+`labels` matches **any** configured label, case-insensitively, and deduplicates issues matching multiple labels. An empty list disables GitHub fetching. Restart after configuration edits. Descriptions are displayed as plain text, never HTML or embedded images. Repository and text filters apply locally; newest updates come first. Expand an issue for its full description or open it on GitHub for comments.
+
+The tab loads on first selection and checks every 60 seconds while visible. Both Refresh buttons use the same shared server cache; concurrent requests are deduplicated and manual refresh cannot bypass the 60-second cooldown or GitHub rate-limit cooldowns. No background GitHub polling occurs without a visible client. Repository and issue lists are paginated rather than using GitHub Search's 1,000-result-limited endpoint. Safety limits of 100 pages per list and two minutes per refresh are reported as incomplete results, never as an empty successful list. A failed/incomplete refresh preserves previous results with a stale indicator and timestamp; if only partial results were obtained initially, they are explicitly marked partial.
+
 ## Container terminals
 
 The **Terminal** button in the container table opens a new terminal window on the host running `podman exec -it <container> <shell>` for that row. The server prefers `bash` inside the container when available, falling back to `sh`. The button is enabled only while the container is running.

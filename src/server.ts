@@ -8,12 +8,13 @@ import path from 'node:path';
 import { hostname, networkInterfaces } from 'node:os';
 import { Monitor, RequestError, message, type Action } from './monitor.js';
 import { openContainerTerminal } from './terminal.js';
+import { GitHubIssues } from './github.js';
 
 const spawnLogs = (containerName: string) => spawn('podman', ['logs', '--tail', '200', '--follow', '--timestamps', containerName], { shell: false, stdio: ['ignore', 'pipe', 'pipe'] });
 // A terminal emulator opens on the host's display, so it only makes sense for a client on the host itself.
 const isLoopback = (address: string | undefined) => address === '127.0.0.1' || address === '::1' || address === '::ffff:127.0.0.1';
 
-export function createServer(monitor: Monitor, publicDirectory: string, startLogProcess = spawnLogs, scanProcesses = () => scanBuildProcesses(monitor.config.monitoredProcesses), openTerminal: (containerName: string) => Promise<void> = openContainerTerminal) {
+export function createServer(monitor: Monitor, publicDirectory: string, startLogProcess = spawnLogs, scanProcesses = () => scanBuildProcesses(monitor.config.monitoredProcesses), openTerminal: (containerName: string) => Promise<void> = openContainerTerminal, github = new GitHubIssues(monitor.config.github)) {
   const allowedHosts = new Set(['localhost', '0.0.0.0', '127.0.0.1', hostname().toLowerCase(), ...Object.values(networkInterfaces()).flatMap(addresses => (addresses ?? []).filter(address => address.family === 'IPv4').map(address => address.address))]);
   const token = randomBytes(32).toString('hex');
   const requireToken = (req: IncomingMessage) => {
@@ -46,6 +47,10 @@ export function createServer(monitor: Monitor, publicDirectory: string, startLog
       }
       if (req.method === 'GET' && url.pathname === '/api/build-processes') {
         json(res, 200, { processes: await scanProcesses(), monitoredProcesses: monitor.config.monitoredProcesses }); return;
+      }
+      if (req.method === 'GET' && url.pathname === '/api/github') {
+        const snapshot = await github.get();
+        json(res, snapshot.error && snapshot.updatedAt === null ? 503 : 200, snapshot); return;
       }
       const fileMatch = /^\/api\/files\/([a-f0-9]{64})\/logs$/.exec(url.pathname);
       const match = /^\/api\/resources\/([a-z0-9-]+)\/(actions|logs|terminal)$/.exec(url.pathname);
@@ -132,6 +137,7 @@ export function createServer(monitor: Monitor, publicDirectory: string, startLog
           '/app.js': ['app.js', 'text/javascript; charset=utf-8'],
           '/tail-output.js': ['tail-output.js', 'text/javascript; charset=utf-8'],
           '/timeline.js': ['timeline.js', 'text/javascript; charset=utf-8'],
+          '/github.js': ['github.js', 'text/javascript; charset=utf-8'],
           '/style.css': ['style.css', 'text/css; charset=utf-8'],
           '/logo.png': ['logo.png', 'image/png']
         };

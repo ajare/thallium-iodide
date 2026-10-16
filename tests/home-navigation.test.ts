@@ -27,12 +27,12 @@ test('Home is the initial view and logo, icon and keyboard navigation select it'
     };
     elements.set(match[1], el);
   }
-  const tabs = ['home', 'containers', 'files', 'build-processes'].map(id => elements.get(`${id}-tab`)!);
+  const tabs = ['home', 'containers', 'files', 'build-processes', 'github'].map(id => elements.get(`${id}-tab`)!);
   const document = { getElementById: (id: string) => elements.get(id), querySelectorAll: () => [], get activeElement() { return focused; } };
   const js = ts.transpileModule(source.replace(/^import .*;\n/gm, ''), { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.None } }).outputText;
-  vm.runInNewContext(js, { document, window: { addEventListener() {} }, fetch: () => new Promise(() => {}), clearTimeout, setTimeout });
+  vm.runInNewContext(js, { document, createGitHubView: () => ({ setActive() {}, refresh() {}, close() {} }), window: { addEventListener() {} }, fetch: () => new Promise(() => {}), clearTimeout, setTimeout });
   const expectView = (selected: string) => {
-    for (const id of ['home', 'containers', 'files', 'build-processes']) {
+    for (const id of ['home', 'containers', 'files', 'build-processes', 'github']) {
       assert.equal(elements.get(`${id}-panel`)!.hidden, id !== selected);
       assert.equal(elements.get(`${id}-tab`)!.attributes.get('aria-selected'), String(id === selected));
       assert.equal(elements.get(`${id}-tab`)!.tabIndex, id === selected ? 0 : -1);
@@ -47,7 +47,7 @@ test('Home is the initial view and logo, icon and keyboard navigation select it'
   const key = (value: string) => listeners.get('tabs:keydown')!({ key: value, preventDefault() {} });
   tabs[0].focus(); key('ArrowRight'); expectView('containers');
   key('Home'); expectView('home');
-  key('ArrowLeft'); expectView('build-processes');
+  key('ArrowLeft'); expectView('github');
   key('ArrowRight'); expectView('home');
   assert.equal(tabs[0].attributes.get('aria-label'), 'Home');
   assert.match(html, /id="home-tab"[^>]*><svg/);

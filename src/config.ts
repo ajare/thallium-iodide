@@ -27,6 +27,12 @@ export const configSchema = z.object({
   actionTimeoutMs: z.number().int().min(1000).max(600000).default(120000),
   monitoredProcesses: z.array(z.string().min(1).max(100).regex(/^[a-zA-Z0-9_][a-zA-Z0-9_.+-]*$/, 'Use executable names, not paths or patterns')).max(100).refine(names => new Set(names).size === names.length, 'Duplicate monitored process names').default(DEFAULT_MONITORED_PROCESSES),
   monitoredPaths: z.array(z.string().min(1).refine(value => path.isAbsolute(value) && !value.includes('\0'), 'Monitored paths must be absolute; ~ is not expanded')).max(100).default([]),
+  github: z.object({
+    owner: z.string().regex(/^[a-zA-Z0-9][a-zA-Z0-9-]{0,38}$/).default('ajare'),
+    labels: z.array(z.string().trim().min(1).max(100).refine(value => !/[\r\n\0]/.test(value), 'Invalid label')).max(20)
+      .refine(labels => new Set(labels.map(label => label.toLowerCase())).size === labels.length, 'Duplicate GitHub labels')
+      .default(['assignee:halogen/qwen-3.8-flash-next'])
+  }).strict().default({}),
   resources: z.array(resourceSchema).min(1).max(100)
 }).strict().superRefine((value, ctx) => {
   const ids = value.resources.map(r => r.id);

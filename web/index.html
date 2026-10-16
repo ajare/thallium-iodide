@@ -10,7 +10,7 @@
   <main>
     <header><div><p class="eyebrow">LOCAL INFRASTRUCTURE · PODMAN</p><h1><button id="home-logo" class="logo-button" aria-label="Home" title="Home" aria-controls="home-panel"><img class="site-logo" src="/logo.png" alt="" width="40" height="44"></button>Thallium Iodide<span class="dot" aria-hidden="true"></span></h1><p class="subtitle">Know what’s running. Recover what isn’t.</p></div><div class="connection"><span id="connection">Connecting…</span><button id="refresh">Refresh</button></div></header>
     <div id="banner" role="alert" hidden></div>
-    <div id="tabs" class="tabs" role="tablist" aria-label="Dashboard views"><button id="home-tab" role="tab" aria-label="Home" title="Home" aria-selected="true" aria-controls="home-panel"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></svg></button><button id="containers-tab" role="tab" aria-selected="false" aria-controls="containers-panel" tabindex="-1">Containers</button><button id="files-tab" role="tab" aria-selected="false" aria-controls="files-panel" tabindex="-1">Files</button><button id="build-processes-tab" role="tab" aria-selected="false" aria-controls="build-processes-panel" tabindex="-1">Processes</button></div>
+    <div id="tabs" class="tabs" role="tablist" aria-label="Dashboard views"><button id="home-tab" role="tab" aria-label="Home" title="Home" aria-selected="true" aria-controls="home-panel"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></svg></button><button id="containers-tab" role="tab" aria-selected="false" aria-controls="containers-panel" tabindex="-1">Containers</button><button id="files-tab" role="tab" aria-selected="false" aria-controls="files-panel" tabindex="-1">Files</button><button id="build-processes-tab" role="tab" aria-selected="false" aria-controls="build-processes-panel" tabindex="-1">Processes</button><button id="github-tab" role="tab" aria-selected="false" aria-controls="github-panel" tabindex="-1">GitHub</button></div>
     <div id="tab-panels">
     <section id="home-panel" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
       <h2>Home</h2>
@@ -30,6 +30,18 @@
       </table>
     </div>
     </div>
+    </section>
+    <section id="github-panel" role="tabpanel" aria-labelledby="github-tab" tabindex="0" hidden>
+      <h2>GitHub issues</h2>
+      <p id="github-scope">Open issues matching the configured labels. Read-only.</p>
+      <div class="github-tools">
+        <label>Repository <select id="github-repository"><option value="">All repositories</option></select></label>
+        <label>Search <input id="github-search" type="search" placeholder="Title, description, label or assignee"></label>
+        <button id="github-refresh">Refresh GitHub</button>
+      </div>
+      <p id="github-status" role="status">Select this tab to load GitHub issues.</p>
+      <p id="github-count"></p>
+      <div id="github-issues"></div>
     </section>
     <section id="files-panel" role="tabpanel" aria-labelledby="files-tab" tabindex="0" hidden>
       <h2>Monitored files</h2>

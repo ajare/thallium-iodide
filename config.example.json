@@ -1,6 +1,10 @@
 {
   "monitoredProcesses": ["ctest", "cmake", "gcc", "g++"],
   "monitoredPaths": [],
+  "github": {
+    "owner": "ajare",
+    "labels": ["assignee:halogen/qwen-3.8-flash-next"]
+  },
   "port": 4310,
   "scriptsDirectory": "/absolute/path/to/container-scripts",
   "pollIntervalMs": 5000,

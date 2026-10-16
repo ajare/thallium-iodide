@@ -1,5 +1,8 @@
 import { TailOutput } from './tail-output.js';
 import { parseTimeline } from './timeline.js';
+import { createGitHubView } from './github.js';
+
+const githubView = createGitHubView();
 
 type Action = 'start' | 'stop' | 'restart';
 type Resource = {
@@ -180,6 +183,10 @@ function selectTab(id: string | null) {
   stopStream();
   if (activeLogs && logViews.has(activeLogs)) logViews.get(activeLogs)!.status.textContent = 'Paused — select this tab to reconnect';
   activeLogs = id;
+  githubView.setActive(id === ':github');
+  element('github-panel').hidden = id !== ':github';
+  element('github-tab').setAttribute('aria-selected', String(id === ':github'));
+  element('github-tab').tabIndex = id === ':github' ? 0 : -1;
   element('home-panel').hidden = id !== ':home';
   element('home-tab').setAttribute('aria-selected', String(id === ':home'));
   element('home-tab').tabIndex = id === ':home' ? 0 : -1;
@@ -469,6 +476,7 @@ async function refreshBuildProcesses() {
 }
 element('home-logo').onclick = () => { selectTab(':home'); element('home-tab').focus(); };
 element('home-tab').onclick = () => selectTab(':home');
+element('github-tab').onclick = () => selectTab(':github');
 element('build-processes-tab').onclick = () => selectTab(':build-processes');
 element('files-tab').onclick = () => selectTab(':files');
 element('containers-tab').onclick = () => selectTab(null);
@@ -482,6 +490,6 @@ element('tabs').addEventListener('keydown', event => {
     (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
   tabs[next].click(); tabs[next].focus();
 });
-element('refresh').onclick = () => void refresh();
-window.addEventListener('pagehide', () => { stream?.close(); clearTimeout(timer); });
+element('refresh').onclick = () => { void refresh(); githubView.refresh(); };
+window.addEventListener('pagehide', () => { stream?.close(); clearTimeout(timer); githubView.close(); });
 void refresh();
