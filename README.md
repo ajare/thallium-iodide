@@ -97,6 +97,23 @@ Optional configuration (these are the defaults):
 
 The tab loads on first selection and checks every 60 seconds while visible. Both Refresh buttons use the same shared server cache; concurrent requests are deduplicated and manual refresh cannot bypass the 60-second cooldown or GitHub rate-limit cooldowns. No background GitHub polling occurs without a visible client. Repository and issue lists are paginated rather than using GitHub Search's 1,000-result-limited endpoint. Safety limits of 100 pages per list and two minutes per refresh are reported as incomplete results, never as an empty successful list. A failed/incomplete refresh preserves previous results with a stale indicator and timestamp; if only partial results were obtained initially, they are explicitly marked partial.
 
+## JSON status API
+
+`GET /api/status` returns a read-only combined snapshot:
+
+```sh
+curl http://127.0.0.1:4310/api/status
+```
+
+- `generatedAt`: response generation time (ISO 8601); individual sections are not sampled atomically.
+- `containers`: configured containers with `id`, `name`, `containerName`, `status` (lifecycle state), `liveness`, `readiness`, `checkedAt`, `detail`, and `configurationErrors`. Checks use the latest monitor poll, not a new probe per request; `checkedAt` is null before the first check.
+- `podmanError` and `pollIntervalMs`: container inventory error (or null) and configured polling interval.
+- `files`: `monitoredPaths`, a freshly scanned `files` list (`id`, `path`, `modifiedAt`, `modifiedMs`), and `errors`.
+- `processes`: `monitoredProcesses`, a freshly scanned `processes` list (`pid`, `command`, `startedAt`, `elapsedSeconds`, `cpuPercent`, `memoryPercent`, `memoryBytes`), and `error`. Memory bytes are RSS; CPU is the lifetime average from `ps`. On scan failure the list is null, not an empty successful result.
+- `github`: the same cached snapshot as `/api/github`, including `issues` (tickets), owner/labels, timestamps, and `stale`, `partial`, and `error` indicators. Requests share its refresh and rate-limit cooldowns.
+
+The endpoint returns HTTP 200 even when a source is unavailable: inspect each section's errors and freshness indicators. It includes no control token or file contents. Existing Host/origin protections apply, but no authentication is required; anyone who can reach the dashboard can read this status, including matching private GitHub issues.
+
 ## Container terminals
 
 The **Terminal** button in the container table opens a new terminal window on the host running `podman exec -it <container> <shell>` for that row. The server prefers `bash` inside the container when available, falling back to `sh`. The button is enabled only while the container is running.

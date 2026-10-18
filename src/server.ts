@@ -39,6 +39,27 @@ export function createServer(monitor: Monitor, publicDirectory: string, startLog
         throw new RequestError('Cross-origin access forbidden', 403);
       }
       const url = new URL(req.url ?? '/', `http://${host}`);
+      if (req.method === 'GET' && url.pathname === '/api/status') {
+        const [files, processes, tickets] = await Promise.all([
+          scanFiles(monitor.config.monitoredPaths),
+          Promise.resolve().then(scanProcesses).then(
+            processes => ({ processes, error: null }),
+            error => ({ processes: null, error: message(error) })
+          ),
+          github.get()
+        ]);
+        const state = monitor.data();
+        json(res, 200, {
+          generatedAt: new Date().toISOString(),
+          podmanError: state.podmanError,
+          pollIntervalMs: state.pollIntervalMs,
+          containers: state.resources.map(({ id, name, containerName, lifecycle, liveness, readiness, checkedAt, detail, configurationErrors }) =>
+            ({ id, name, containerName, status: lifecycle, liveness, readiness, checkedAt, detail, configurationErrors })),
+          files: { monitoredPaths: monitor.config.monitoredPaths, ...files },
+          processes: { monitoredProcesses: monitor.config.monitoredProcesses, ...processes },
+          github: tickets
+        }); return;
+      }
       if (req.method === 'GET' && url.pathname === '/api/state') {
         json(res, 200, { ...monitor.data(), token, localClient: isLoopback(req.socket.remoteAddress) }); return;
       }
