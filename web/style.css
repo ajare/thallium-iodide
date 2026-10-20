@@ -47,8 +47,8 @@ button:focus-visible { outline: 2px solid var(--accent-bright); outline-offset: 
 .containers-layout .table-scroll { flex: 2 1 1050px; min-width: min(1050px, 100%); }
 .grafana-panel { border: 1px solid var(--border); border-radius: 10px; background: var(--surface); padding: 16px; flex: 1 1 482px; min-width: min(482px, 100%); }
 .grafana-panel .eyebrow { margin-bottom: 12px; }
-.grafana-panel iframe { display: block; border-radius: 6px; background: var(--surface-deep); width: 100%; }
-.grafana-panel iframe + iframe { margin-top: 12px; }
+.grafana-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.grafana-grid iframe { display: block; border-radius: 6px; background: var(--surface-deep); width: 100%; }
 .containers-table { width: 100%; border-collapse: collapse; text-align: left; min-width: 1050px; }
 .containers-table th, .containers-table td { padding: 18px 14px; vertical-align: top; border-bottom: 1px solid var(--border); }
 .containers-table thead th { background: var(--surface); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); white-space: nowrap; }
@@ -151,6 +151,7 @@ footer { color: var(--quiet); font-size: 11px; letter-spacing: .4px; margin-top:
   /* The 11-column containers table becomes a stack of per-resource cards. */
   #containers-panel .table-scroll { overflow-x: visible; }
   .containers-layout .table-scroll, .grafana-panel { flex-basis: auto; min-width: 0; width: 100%; }
+  .grafana-grid { grid-template-columns: 1fr; }
   .containers-table { min-width: 0; }
   .containers-table, .containers-table tbody { display: block; }
   .containers-table thead { display: none; }
